@@ -8,7 +8,7 @@ function App() {
 
   const updateCalc = (value) => {
     if (
-      (ops.includes(value) && calc === '') ||
+      (ops.includes(value) && calc === "") ||
       (ops.includes(value) && ops.includes(calc.slice(-1)))
     ) {
       return;
@@ -17,21 +17,8 @@ function App() {
     setCalc(calc + value);
 
     if (!ops.includes(value)) {
-      setResult(eval(calc + value).toString())
+      setResult(eval(calc + value).toString());
     }
-  };
-
-  const createDigits = () => {
-    const digits = [];
-
-    for (let i = 1; i < 10; i++) {
-      digits.push(
-        <button onClick={() => updateCalc(i.toString())} key={i}>
-          {i}
-        </button>
-      );
-    }
-    return digits;
   };
 
   const calculate = () => {
@@ -39,36 +26,94 @@ function App() {
   };
 
   const deleteLast = () => {
-    if (calc === '') {
+    if (calc === "") {
       return;
     }
-
     const value = calc.slice(0, -1);
     setCalc(value);
+  };
+
+  const reset = () => {
+    setCalc("");
+    setResult("");
   }
 
   return (
     <div className="App">
+      <h1>React Calculator</h1>
       <div className="calculator">
         <div className="screen">
-          {result ? <span>({ result })</span> : ""}&nbsp;
+          {result ? <span>({result})</span> : ""}&nbsp;
           {calc || "0"}
         </div>
 
-        <div className="operators">
-          <button onClick={() => updateCalc("/")}>/</button>
-          <button onClick={() => updateCalc("*")}>*</button>
-          <button onClick={() => updateCalc("+")}>+</button>
-          <button onClick={() => updateCalc("-")}>-</button>
+        <div className="interface">
+          <div className="row3">
+            <button className="grey" onClick={reset}>
+              AC
+            </button>
 
-          <button onClick={deleteLast}>DEL</button>
-        </div>
+            <button className="grey" onClick={deleteLast}>
+              DEL
+            </button>
 
-        <div className="digits">
-          {createDigits()}
-          <button onClick={() => updateCalc("0")}>0</button>
-          <button onClick={() => updateCalc(".")}>.</button>
-          <button onClick={calculate}>=</button>
+            <button className="operators" onClick={() => updateCalc("/")}>
+              /
+            </button>
+          </div>
+
+          <div className="row4">
+            <button className="digits" onClick={() => updateCalc("1")}>
+              1
+            </button>
+            <button className="digits" onClick={() => updateCalc("2")}>
+              2
+            </button>
+            <button className="digits" onClick={() => updateCalc("3")}>
+              3
+            </button>
+
+            <button className="operators" onClick={() => updateCalc("*")}>
+              *
+            </button>
+          </div>
+          <div className="row4">
+            <button className="digits" onClick={() => updateCalc("4")}>
+              4
+            </button>
+            <button className="digits" onClick={() => updateCalc("5")}>
+              5
+            </button>
+            <button className="digits" onClick={() => updateCalc("6")}>
+              6
+            </button>
+
+            <button className="operators" onClick={() => updateCalc("+")}>
+              +
+            </button>
+          </div>
+
+          <div className="row4">
+            <button className="digits" onClick={() => updateCalc("7")}>
+              7
+            </button>
+            <button className="digits" onClick={() => updateCalc("8")}>
+              8
+            </button>
+            <button className="digits" onClick={() => updateCalc("9")}>
+              9
+            </button>
+
+            <button className="operators" onClick={() => updateCalc("-")}>
+              -
+            </button>
+          </div>
+
+          <div className="row3">
+            <button className="digits" onClick={() => updateCalc("0")}>0</button>
+            <button className="digits" onClick={() => updateCalc(".")}>.</button>
+            <button className="operators" onClick={calculate}>=</button>
+          </div>
         </div>
       </div>
     </div>
