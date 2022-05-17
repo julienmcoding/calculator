@@ -41,23 +41,30 @@ h1 {
 .screen {
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  text-align: right;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: .75rem 1.5rem;
   background-color: var(--dark);
-  color: var(--light);
-  font-size: 24px;
-  font-weight: 300;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
-.screen span {
-  font-size: 14px;
+.prev {
+  font-size: 1rem;
   color: grey;
+  padding-bottom: 15px;
+}
+
+.current {
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--light);
 }
 
 button {
   appearance: none;
-  border: none;
   outline: none;
+  border: none;
   color: var(--light);
   font-size: 20px;
   padding: 16px;

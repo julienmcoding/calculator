@@ -43,8 +43,9 @@ function App() {
       <h1>React Calculator</h1>
       <div className="calculator">
         <div className="screen">
-          {result ? <span>({result})</span> : ""}&nbsp;
-          {calc || "0"}
+          <div className="prev">{result ? <span>({result})</span> : ""}</div>
+          <div className="current">{calc || "0"}</div>
+          
         </div>
 
         <div className="interface">
