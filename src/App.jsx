@@ -1,119 +1,203 @@
-import { useState } from "react";
+import { useReducer } from "react";
+import DigitButton from "./components/DigitButton";
+import OperationButton from "./components/OperationButton";
+
+export const ACTIONS = {
+  ADD_DIGIT: "add-digit",
+  CHOOSE_OPERATION: "choose-operation",
+  CLEAR: "clear",
+  DELETE_DIGIT: "delete-digit",
+  EVALUATE: "evaluate",
+};
+
+function reducer(state, { type, payload }) {
+  switch (type) {
+    case ACTIONS.ADD_DIGIT:
+      if (state.overwrite) {
+        return {
+          ...state,
+          currentOperand: payload.digit,
+          overwrite: false,
+        };
+      }
+      if (payload.digit === "0" && state.currentOperand === "0") {
+        return state;
+      }
+      if (payload.digit === "." && state.currentOperand.includes(".")) {
+        return state;
+      }
+
+      return {
+        ...state,
+        currentOperand: `${state.currentOperand || ""}${payload.digit}`,
+      };
+    case ACTIONS.CHOOSE_OPERATION:
+      if (state.currentOperand == null && state.previousOperand == null) {
+        return state;
+      }
+
+      if (state.currentOperand == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+        };
+      }
+
+      if (state.previousOperand == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+          previousOperand: state.currentOperand,
+          currentOperand: null,
+        };
+      }
+
+      return {
+        ...state,
+        previousOperand: evaluate(state),
+        operation: payload.operation,
+        currentOperand: null,
+      };
+    case ACTIONS.CLEAR:
+      return {};
+    case ACTIONS.DELETE_DIGIT:
+      if (state.overwrite) {
+        return {
+          ...state,
+          overwrite: false,
+          currentOperand: null,
+        };
+      }
+      if (state.currentOperand == null) return state;
+      if (state.currentOperand.length === 1) {
+        return { ...state, currentOperand: null };
+      }
+
+      return {
+        ...state,
+        currentOperand: state.currentOperand.slice(0, -1),
+      };
+    case ACTIONS.EVALUATE:
+      if (
+        state.operation == null ||
+        state.currentOperand == null ||
+        state.previousOperand == null
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        overwrite: true,
+        previousOperand: null,
+        operation: null,
+        currentOperand: evaluate(state),
+      };
+    default:
+      break;
+  }
+}
+
+function evaluate({ currentOperand, previousOperand, operation }) {
+  const prev = parseFloat(previousOperand);
+  const current = parseFloat(currentOperand);
+  if (isNaN(prev) || isNaN(current)) return "";
+  let computation = "";
+  switch (operation) {
+    case "+":
+      computation = prev + current;
+      break;
+    case "-":
+      computation = prev - current;
+      break;
+    case "*":
+      computation = prev * current;
+      break;
+    case "÷":
+      computation = prev / current;
+      break;
+    default:
+      break;
+  }
+
+  return computation.toString();
+}
+
+const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
+  maximumFractionDigits: 0,
+});
+function formatOperand(operand) {
+  if (operand == null) return;
+  const [integer, decimal] = operand.split(".");
+  if (decimal == null) return INTEGER_FORMATTER.format(integer);
+  return `${INTEGER_FORMATTER.format(integer)}.${decimal}`;
+}
 
 function App() {
-  const [calc, setCalc] = useState("");
-  const [result, setResult] = useState("");
-
-  const ops = ["/", "*", "+", "-", "."];
-
-  const updateCalc = (value) => {
-    if (
-      (ops.includes(value) && calc === "") ||
-      (ops.includes(value) && ops.includes(calc.slice(-1)))
-    ) {
-      return;
-    }
-
-    setCalc(calc + value);
-
-    if (!ops.includes(value)) {
-      setResult(eval(calc + value).toString());
-    }
-  };
-
-  const calculate = () => {
-    setCalc(eval(calc).toString());
-  };
-
-  const deleteLast = () => {
-    if (calc === "") {
-      return;
-    }
-    const value = calc.slice(0, -1);
-    setCalc(value);
-  };
-
-  const reset = () => {
-    setCalc("");
-    setResult("");
-  }
+  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(
+    reducer,
+    {}
+  );
 
   return (
     <div className="App">
       <h1>React Calculator</h1>
       <div className="calculator">
         <div className="screen">
-          <div className="prev">{result ? <span>({result})</span> : ""}</div>
-          <div className="current">{calc || "0"}</div>
-          
+          <div className="prev">
+            {formatOperand(previousOperand)} {operation}
+          </div>
+          <div className="current">{formatOperand(currentOperand)}</div>
         </div>
 
         <div className="interface">
           <div className="row3">
-            <button className="grey" onClick={reset}>
+            <button
+              className="grey"
+              onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+            >
               AC
             </button>
 
-            <button className="grey" onClick={deleteLast}>
+            <button
+              className="grey"
+              onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
+            >
               DEL
             </button>
 
-            <button className="operators" onClick={() => updateCalc("/")}>
-              /
-            </button>
+            <OperationButton operation="/" dispatch={dispatch} />
           </div>
 
           <div className="row4">
-            <button className="digits" onClick={() => updateCalc("1")}>
-              1
-            </button>
-            <button className="digits" onClick={() => updateCalc("2")}>
-              2
-            </button>
-            <button className="digits" onClick={() => updateCalc("3")}>
-              3
-            </button>
-
-            <button className="operators" onClick={() => updateCalc("*")}>
-              *
-            </button>
+            <DigitButton digit="1" dispatch={dispatch} />
+            <DigitButton digit="2" dispatch={dispatch} />
+            <DigitButton digit="3" dispatch={dispatch} />
+            <OperationButton operation="*" dispatch={dispatch} />
           </div>
           <div className="row4">
-            <button className="digits" onClick={() => updateCalc("4")}>
-              4
-            </button>
-            <button className="digits" onClick={() => updateCalc("5")}>
-              5
-            </button>
-            <button className="digits" onClick={() => updateCalc("6")}>
-              6
-            </button>
-
-            <button className="operators" onClick={() => updateCalc("+")}>
-              +
-            </button>
+            <DigitButton digit="4" dispatch={dispatch} />
+            <DigitButton digit="5" dispatch={dispatch} />
+            <DigitButton digit="6" dispatch={dispatch} />
+            <OperationButton operation="+" dispatch={dispatch} />
           </div>
 
           <div className="row4">
-            <button className="digits" onClick={() => updateCalc("7")}>
-              7
-            </button>
-            <button className="digits" onClick={() => updateCalc("8")}>
-              8
-            </button>
-            <button className="digits" onClick={() => updateCalc("9")}>
-              9
-            </button>
-
-            <button className="operators" onClick={() => updateCalc("-")}>
-              -
-            </button>
+            <DigitButton digit="7" dispatch={dispatch} />
+            <DigitButton digit="8" dispatch={dispatch} />
+            <DigitButton digit="9" dispatch={dispatch} />
+            <OperationButton operation="-" dispatch={dispatch} />
           </div>
 
           <div className="row3">
-            <button className="digits" onClick={() => updateCalc("0")}>0</button>
-            <button className="digits" onClick={() => updateCalc(".")}>.</button>
-            <button className="operators" onClick={calculate}>=</button>
+            <DigitButton digit="0" dispatch={dispatch} />
+            <DigitButton digit="." dispatch={dispatch} />
+            <button
+              className="operators"
+              onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
+            >
+              =
+            </button>
           </div>
         </div>
       </div>
